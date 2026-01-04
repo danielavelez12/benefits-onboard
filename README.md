@@ -37,3 +37,21 @@ uvicorn app.main:app --reload
 - Client runs on: `http://localhost:3000`
 - Server runs on: `http://localhost:8000`
 
+## Testing
+
+### Backend Tests
+
+```bash
+cd server
+pytest
+```
+
+### Frontend E2E Tests
+
+```bash
+cd client
+npm run test:e2e
+```
+
+**Note:** For full E2E tests, ensure both the client and server are running.
+

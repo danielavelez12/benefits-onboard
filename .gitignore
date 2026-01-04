@@ -41,4 +41,10 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
+*.egg-info/
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
 

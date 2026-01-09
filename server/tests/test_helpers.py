@@ -1,7 +1,7 @@
 import pytest
 import os
 from unittest.mock import patch, MagicMock
-from app.helpers import process_bank_statement
+from app.bank_statement_processing import process_bank_statement
 
 
 def test_process_bank_statement_missing_api_key():
@@ -11,8 +11,8 @@ def test_process_bank_statement_missing_api_key():
             process_bank_statement(b"fake content", "test.pdf")
 
 
-@patch("app.helpers.genai")
-@patch("app.helpers.PyPDF2.PdfReader")
+@patch("app.bank_statement_processing.genai")
+@patch("app.bank_statement_processing.PyPDF2.PdfReader")
 def test_process_bank_statement_pdf(mock_pdf_reader, mock_genai):
     """Test process_bank_statement with PDF file"""
     # Mock PDF reader
@@ -53,17 +53,17 @@ def test_process_bank_statement_pdf(mock_pdf_reader, mock_genai):
 
         result = process_bank_statement(pdf_content, "test.pdf")
 
-        assert "transactions" in result
-        assert len(result["transactions"]) == 2
-        assert result["totalExpenses"] == 125.50
-        assert result["totalIncome"] == 5000.00
-        assert result["period"] == "January 2024"
-        assert result["transactions"][0]["type"] == "expense"
-        assert result["transactions"][1]["type"] == "income"
+        assert result.transactions is not None
+        assert len(result.transactions) == 2
+        assert result.total_expenses == 125.50
+        assert result.total_income == 5000.00
+        assert result.period == "January 2024"
+        assert result.transactions[0]["type"] == "expense"
+        assert result.transactions[1]["type"] == "income"
 
 
-@patch("app.helpers.genai")
-@patch("app.helpers.Image")
+@patch("app.bank_statement_processing.genai")
+@patch("app.bank_statement_processing.Image")
 def test_process_bank_statement_image(mock_image, mock_genai):
     """Test process_bank_statement with image file"""
     # Mock the Gemini API
@@ -96,14 +96,14 @@ def test_process_bank_statement_image(mock_image, mock_genai):
 
         result = process_bank_statement(image_content, "test.png")
 
-        assert "transactions" in result
-        assert len(result["transactions"]) == 1
-        assert result["totalExpenses"] == 5.50
-        assert result["totalIncome"] == 0.00
+        assert result.transactions is not None
+        assert len(result.transactions) == 1
+        assert result.total_expenses == 5.50
+        assert result.total_income == 0.00
 
 
-@patch("app.helpers.genai")
-@patch("app.helpers.PyPDF2.PdfReader")
+@patch("app.bank_statement_processing.genai")
+@patch("app.bank_statement_processing.PyPDF2.PdfReader")
 def test_process_bank_statement_json_parsing_error(mock_pdf_reader, mock_genai):
     """Test process_bank_statement with invalid JSON response"""
     # Mock PDF reader
@@ -126,14 +126,14 @@ def test_process_bank_statement_json_parsing_error(mock_pdf_reader, mock_genai):
         result = process_bank_statement(pdf_content, "test.pdf")
 
         # Should return error structure
-        assert "error" in result
-        assert result["transactions"] == []
-        assert result["totalExpenses"] == 0.0
-        assert result["totalIncome"] == 0.0
+        assert result.error is not None
+        assert result.transactions == []
+        assert result.total_expenses == 0.0
+        assert result.total_income == 0.0
 
 
-@patch("app.helpers.genai")
-@patch("app.helpers.PyPDF2.PdfReader")
+@patch("app.bank_statement_processing.genai")
+@patch("app.bank_statement_processing.PyPDF2.PdfReader")
 def test_process_bank_statement_calculates_totals(mock_pdf_reader, mock_genai):
     """Test that process_bank_statement calculates totals if not provided"""
     # Mock PDF reader
@@ -172,5 +172,5 @@ def test_process_bank_statement_calculates_totals(mock_pdf_reader, mock_genai):
         result = process_bank_statement(pdf_content, "test.pdf")
 
         # Should calculate totals from transactions
-        assert result["totalExpenses"] == 100.00
-        assert result["totalIncome"] == 200.00
+        assert result.total_expenses == 100.00
+        assert result.total_income == 200.00
